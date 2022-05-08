@@ -14,12 +14,12 @@ generation = 0
 class Car:
     def __init__(self):
         self.surface = pygame.image.load("car_diesel_1.png")
-        self.surface = pygame.transform.scale(self.surface, (100, 100))
         self.rotate_surface = self.surface
-        self.pos = [1000, 740] #700, 650
+        self.pos = [800, 730] #700, 650
         self.angle = 0
         self.speed = 0
-        self.center = [self.pos[0], self.pos[1]] #self.pos[0] + 50, self.pos[1] + 50
+        self.center = [self.pos[0] + 25, self.pos[1] + 25] #self.pos[0] + 50, self.pos[1] + 50
+        pygame.draw.circle(self.surface, (0, 0, 255), (25,25), 3)
         self.radars = []
         self.radars_for_draw = []
         self.is_alive = True
@@ -27,10 +27,11 @@ class Car:
         self.distance = 0
         self.time_spent = 0
 
-    def draw(self, screen):
+    def draw(self, screen, map):
         screen.blit(self.rotate_surface, self.pos)
         self.draw_radar(screen)
-        self.drawCheckpoint(screen)
+        self.drawCheckpoint(map)
+        pygame.draw.line(screen, (0, 0, 255), (750, 687), (750, 775), 5)
 
     def draw_radar(self, screen):
         for r in self.radars:
@@ -38,12 +39,24 @@ class Car:
             pygame.draw.line(screen, (255, 0, 0), self.center, pos, 1)
             #pygame.draw.circle(screen, (255,0, 0), pos, 5)
 
-    def drawCheckpoint(self, screen):
+    def drawCheckpoint(self, map):
         
-        pygame.draw.circle(screen, (0, 250, 0, 255), (1200, 230), 20)
-        pygame.draw.circle(screen, (0, 250, 0, 255), (970, 400), 20)
-        pygame.draw.circle(screen, (0, 250, 0, 255), (640,300), 20)
-        pygame.draw.circle(screen, (0, 250, 0, 255), (280,240), 20)
+        pygame.draw.circle(map, (0, 250, 0, 255), (1200, 230), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (970, 400), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (640,300), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (1240,730), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (930,100), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (600,400), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (165,400), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (1165,450), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (765,500), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (105,720), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (475,725), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (350,425), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (55,540), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (470,535), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (1325,530), 15)
+        pygame.draw.circle(map, (0, 250, 0, 255), (280,240), 15)
 
     def checkpoint(self, map):
         for p in self.four_points:
@@ -77,40 +90,34 @@ class Car:
         #check position
         self.rotate_surface = self.rot_center(self.surface, self.angle)
         self.pos[0] += math.cos(math.radians(360 - self.angle)) * self.speed
-        if self.pos[0] < 20:
-            self.pos[0] = 20
-        elif self.pos[0] > screen_width - 120: 
-            self.pos[0] = screen_width - 120 
+      
 
         self.distance += self.speed
         self.time_spent += 1
         self.pos[1] += math.sin(math.radians(360 - self.angle)) * self.speed
-        if self.pos[1] < 20:
-            self.pos[1] = 20
-        elif self.pos[1] > screen_height - 120:  
-            self.pos[1] = screen_height - 120   
+        
 
         # caculate 4 collision points
-        self.center = [int(self.pos[0])+50, int(self.pos[1])+50] #[int(self.pos[0]) + 50, int(self.pos[1]) + 50]
+        self.center = [int(self.pos[0])+25, int(self.pos[1])+25] #[int(self.pos[0]) + 50, int(self.pos[1]) + 50]
         #   print(self.center)
-        len = 40
+        len = 20
         left_top = [self.center[0] + math.cos(math.radians(360 - (self.angle + 30))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 30))) * len]
         right_top = [self.center[0] + math.cos(math.radians(360 - (self.angle + 150))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 150))) * len]
         left_bottom = [self.center[0] + math.cos(math.radians(360 - (self.angle + 210))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 210))) * len]
         right_bottom = [self.center[0] + math.cos(math.radians(360 - (self.angle + 330))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 330))) * len]
         self.four_points = [left_top, right_top, left_bottom, right_bottom]
 
-        self.checkpoint(map)
         self.check_collision(map)
         self.radars.clear()
         for d in range(-90, 120, 45):
             self.check_radar(d, map)
+        self.checkpoint(map)
 
     def get_data(self):
         radars = self.radars
         ret = [0, 0, 0, 0, 0]
         for i, r in enumerate(radars):
-            ret[i] = int(r[1] / 30)
+            ret[i] = int(r[1] / 10)
 
         return ret
 
@@ -167,15 +174,17 @@ def run_car(genomes, config):
             if event.type == pygame.QUIT:
                 sys.exit(0)
 
-        pygame.time.delay(50)
+
+        pygame.time.delay(40)
         # Input my data and get result from network
         for index, car in enumerate(cars):
             output = nets[index].activate(car.get_data())
+            pygame.time.delay(2)
             i = output.index(max(output))
             if i == 0:
-                car.angle += 5
+                car.angle += 15
             else:
-                car.angle -= 5
+                car.angle -= 15
 
         # Update car and fitness
         remain_cars = 0
@@ -193,7 +202,7 @@ def run_car(genomes, config):
         screen.blit(map, (0, 0))
         for car in cars:
             if car.get_alive():
-                car.draw(screen)
+                car.draw(screen, map)
 
         text = generation_font.render("Generation: " + str(generation), True, (1, 1, 1))
         text_rect = text.get_rect()
